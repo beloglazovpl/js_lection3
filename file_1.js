@@ -13,15 +13,16 @@ class Good {
 }
 
 class GoodsList {
+    #goods;
     constructor (options) {
-        this.$goods = [];
+        this.#goods = [];
         this.filter = options.filter;
         this.sortPrice = options.sortPrice;
         this.sortDir = options.sortDir;
     }
     get list () {
         if (this.sortPrice == true && this.sortDir == true) {
-            return this.$goods
+            return this.#goods
                 .filter(good => good.available && RegExp(this.filter).test(good.name))
                 .sort(function (a, b) {
                     if (a.price > b.price) {
@@ -33,14 +34,14 @@ class GoodsList {
                     return 0;
                 })
         } else {
-            return this.$goods.filter(good => good.available && RegExp(this.filter).test(good.name))
+            return this.#goods.filter(good => good.available && RegExp(this.filter).test(good.name))
         }
     }
     add (good) {
-        this.$goods.push(good)
+        this.#goods.push(good)
     }
     remove (good) {
-        delete this.$goods[this.$goods.indexOf(good)]
+        delete this.#goods[this.#goods.indexOf(good)]
     }
 }
 
@@ -52,14 +53,15 @@ class BasketGood extends Good {
 }
 
 class Basket {
+    // #goods;
     constructor (options) {
-        this.$goods = []
+        this.goods = []
     }
 
-    $sum () {
+    privateSum () {
         var totalAmount = 0;
         var totalSumm = 0
-        this.$goods.forEach(function(elem) {
+        this.goods.forEach(function(elem) {
             totalAmount += elem.amount;
             totalSumm += elem.price * elem.amount;
         });
@@ -71,47 +73,47 @@ class Basket {
     }
 
     get totalAmount () {
-        return this.$sum().total_amount
+        return this.privateSum().total_amount
     }
     get totalSumm () {
-        return this.$sum().total_summ
+        return this.privateSum().total_summ
     }
 
     add (good, amount) {
         let counter = 0
-        this.$goods.forEach(function(elem) {
+        this.goods.forEach(function(elem) {
             if (elem.id == good.id) {
                 elem.amount += amount
                 counter += 1
             }
         })
         if (counter == 0) {
-            this.$goods.push(new BasketGood(good, amount))
+            this.goods.push(new BasketGood(good, amount))
         }
     }
 
     remove (id, amount) {
-        this.$goods.forEach(function(elem) {
+        this.goods.forEach(function(elem) {
             if (elem.id == id) {
                 elem.amount = elem.amount - amount
             }
         });
-        this.$goods.forEach(function(elem) {
+        this.goods.forEach(function(elem) {
             if (elem.amount <= 0) {
-                this.$goods.splice(this.$goods.indexOf(elem), 1)
+                this.goods.splice(this.goods.indexOf(elem), 1)
                 // delete this.goods[this.goods.indexOf(aaa)]
             }
         })
     }
 
     clear () {
-        this.$goods.length = 0
+        this.goods.length = 0
     }
 
     removeUnavailable () {
-        this.$goods.forEach(function(elem) {
+        this.goods.forEach(function(elem) {
             if (elem.available == false) {
-                delete this.$goods[this.goods.indexOf(elem)]
+                delete this.goods[this.goods.indexOf(elem)]
             }
         })
     }
@@ -128,10 +130,10 @@ const cap = new Good ({
     available: true,
 })
 
-const jeans = new Good ({
+const tShirt = new Good ({
     id: 2,
-    name: 'джинсы',
-    description: 'джинсы синие',
+    name: 'футболка',
+    description: 'футболка синяя',
     sizes: '46, 50',
     price: 120,
     available: true,
@@ -147,7 +149,7 @@ const socks = new Good ({
 })
 
 const catalog = new GoodsList ({
-    filter: 'носки',
+    filter: /к/i,
     sortPrice: true,
     sortDir: true,
 })
@@ -155,21 +157,21 @@ const catalog = new GoodsList ({
 const basket = new Basket ({})
 
 // console.log(cap);
-// console.log(jeans);
+// console.log(tShirt);
 // cap.available = false;
 // console.log(cap);
 
 catalog.add(cap);
-catalog.add(jeans);
+catalog.add(tShirt);
 catalog.add(socks);
-console.log(catalog);
+console.log(catalog.list);
 // catalog.remove(cap);
 // console.log(catalog);
 
 
 basket.add(cap, 5);
-basket.add(jeans, 2);
-basket.add(jeans, 1);
+basket.add(tShirt, 2);
+basket.add(tShirt, 1);
 console.log(basket);
 console.log(basket.totalAmount);
 console.log(basket.totalSumm);
